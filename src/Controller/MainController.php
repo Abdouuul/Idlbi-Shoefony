@@ -34,7 +34,7 @@ class MainController extends AbstractController
         ]);
     }
 
-    #[Route('/contact', name: 'contact_page')]
+    #[Route('/contact', name: 'contact_page', methods:['GET', 'POST'])]
     public function contact(Request $request): Response
     {
         $contact = new Contact();

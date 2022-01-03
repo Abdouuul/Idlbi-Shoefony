@@ -20,7 +20,12 @@ class ContactMailer
         $email = (new Email())
             ->from($contact->getEmail())
             ->to($this->contactEmailAddress)
-            ->subject('Contact form');
+            ->subject('Contact form')
+            ->html($this->twig->render('email/contact.html.twig', [
+                'name' => $contact->getFirstName(),
+                'email' => $contact->getEmail(),
+                'message' => $contact->getMessage(),
+            ]));
 
         $this->mailer->send($email);
     }
