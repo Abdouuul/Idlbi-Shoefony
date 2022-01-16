@@ -9,12 +9,15 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Entity\Contact;
 use App\Form\ContactType;
 use App\Mailer\ContactMailer;
+use Doctrine\ORM\EntityManagerInterface;
 
 class MainController extends AbstractController
 {
     private ContactMailer $contactmailer;
-    public function __construct(ContactMailer $contactmailer)
+    private $em;
+    public function __construct(EntityManagerInterface $em,ContactMailer $contactmailer)
     {
+        $this->em = $em;
         $this->contactmailer = $contactmailer;
     }
 
@@ -44,7 +47,12 @@ class MainController extends AbstractController
         $form->handleRequest($request);
 
         if($form->isSubmitted() && $form->isValid())
-        {
+        {   
+            $this->em->persist($contact);
+            $this->em->flush();
+
+            $this->addFlash('success', 'Merci, votre message a bien été envoyé.');
+            
             $this->contactmailer->send($contact);
             return $this->redirectToRoute('contact_page');
         }
