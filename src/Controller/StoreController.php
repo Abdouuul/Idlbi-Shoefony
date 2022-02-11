@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\Store\ProductRepository;
 use PhpParser\Builder\Method;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\VarDumper\VarDumper;
 
 class StoreController extends AbstractController
 {
@@ -72,18 +73,19 @@ class StoreController extends AbstractController
 
         return $this->render('store/index.html.twig', [
             'brand' => $brand,
-            'brandId' => $brand->getId(),
+            'brandId' => $brandId,
             'products' => $products,
         ]);
 
     }
     
-    public function listAllBrands(): Response
+    public function listAllBrands($brandId): Response
     {
         $brands = $this->brandRepository->findAll();
+
         return $this->render('store/_list_brands.html.twig', [
             'brands' => $brands,
-            'brandId' => null,
+            'brandId' => $brandId,
         ]);
     }
 }
