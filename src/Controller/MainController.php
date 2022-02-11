@@ -9,23 +9,38 @@ use Symfony\Component\HttpFoundation\Request;
 use App\Entity\Contact;
 use App\Form\ContactType;
 use App\Mailer\ContactMailer;
+use App\Repository\Store\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
 class MainController extends AbstractController
 {
-    private ContactMailer $contactmailer;
-    private $em;
-    public function __construct(EntityManagerInterface $em,ContactMailer $contactmailer)
+    public function __construct(
+        private EntityManagerInterface $em,
+        private ContactMailer $contactmailer, 
+        private ProductRepository $productsrepository
+        )
     {
         $this->em = $em;
         $this->contactmailer = $contactmailer;
+        $this->productsrepository = $productsrepository; 
     }
 
     #[Route('/', name: 'main_homepage')]
     public function index(): Response
     {
+        $latestProducts = $this->productsrepository->findLatestProducts();
+        $mostCommentedProducts = $this->productsrepository->findMostPopularProducts();
+
+        for($i = 0; $i < 4; $i++)
+        {
+            $latestProducts[$i]->getImage();
+            $mostCommentedProducts[$i]->getImage();
+        }
+
         return $this->render('main/index.html.twig', [
             'controller_name' => 'MainController',
+            'latestProducts' => $latestProducts,
+            'mostCommentedProducts' => $mostCommentedProducts,
         ]);
     }
 
