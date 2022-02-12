@@ -3,10 +3,17 @@
 namespace App\Event\Subscriber;
 
 use App\Event\ContactCreated;
+use App\Mailer\ContactMailer;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 final class ContactSubscriber implements EventSubscriberInterface
 {
+    private ContactMailer $contactMailer;
+    public function __construct(ContactMailer $contractMailer)
+    {
+        $this->contactMailer = $contractMailer;
+    }
+    
     public static function getSubscribedEvents(): array
     {
         return [
