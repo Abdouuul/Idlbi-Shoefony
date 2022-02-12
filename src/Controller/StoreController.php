@@ -3,38 +3,33 @@
 namespace App\Controller;
 
 use App\Entity\Store\Brand;
+use App\Entity\Store\Comment;
 use App\Entity\Store\Product;
+use App\Form\CommentType;
 use App\Repository\Store\BrandRepository;
 use App\Repository\Store\CommentRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\Store\ProductRepository;
-use PhpParser\Builder\Method;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\VarDumper\VarDumper;
 
 class StoreController extends AbstractController
 {
     public function __construct(
-        EntityManagerInterface $em, 
         private ProductRepository $productRepository,
         private CommentRepository $commentRepository,
-        private BrandRepository $brandRepository
+        private BrandRepository $brandRepository,
+        private EntityManagerInterface $em
         )
-    {
-        $this->em = $em;
-        
-    }
+    {}
 
     #[Route('/store', name: 'store')]
     public function productShowList(): Response
     {
-        $products = $this->productRepository->findAll();
-        foreach($products as $product) {
-            $product->getImage();
-        }
+        $products = $this->productRepository->findAllWithDetails();
 
         return $this->render('store/index.html.twig', [
             'controller_name' => 'StoreController',
@@ -45,16 +40,32 @@ class StoreController extends AbstractController
 
 
 
-    #[Route('/store/product/{id}/details/{slug}', name: 'store_show_product')]
-    public function productDetail(int $id, string $slug): Response
+    #[Route('/store/product/{id}/{slug}', 
+    name: 'store_show_product', 
+    methods:['GET', 'POST'] )]
+    public function productDetail(int $id, string $slug, Request $request): Response
     {
-        $product = $this->productRepository->find($id);
-        $comments = $this->commentRepository->findBy(['product' => $product]);
+        $product = $this->productRepository->findeOneWithDetails($id);
+
+        $comment = new Comment();
+        $comment->setProduct($product);
+
+        $form = $this->createForm(CommentType::class, $comment);
+        $form->handleRequest($request);
+
+        if($form->isSubmitted() && $form->isValid())
+        {   
+            $this->em->persist($comment);
+            $this->em->flush();
+
+            $this->addFlash('success', 'Merci, votre commentaire a bien été envoyé.');
+        }
 
         return $this->render('store/show.html.twig', [
             'slug' => $slug,
-            'comments' => $comments,
+            'comments' => $product->getComments(),
             'product' => $product,
+            'form' => $form->createView(),
         ]);
     }
 

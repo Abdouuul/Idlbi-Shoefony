@@ -89,6 +89,7 @@ class AppFixtures extends Fixture
                     ->setPseudo('Personne ' . $k)
                     ->setMessage('Voici le message de la personne ' . $k . ' pour la chaussure ' . $i);
                 $this->manager->persist($comment);
+                sleep(1);
             }
 
             $productImage = new Image();

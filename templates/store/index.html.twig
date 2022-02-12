@@ -9,7 +9,7 @@
         </div>
 
 		<div class="col-md-9">
-			<p class="lead">Nos produits " Toutes les marques "</p>
+			<p class="lead">Nos produits " {{ brandId is null ? "Toutes Les Produits" : brand.name | capitalize }} "</p>
 
 			<div class="row text-center">
 				{% for product in products %}
